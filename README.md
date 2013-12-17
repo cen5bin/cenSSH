@@ -27,5 +27,5 @@ cenSSH
 
 #其他
 - 配置文件  
-![配置文件](conf.png)
+![配置文件](conf.png)  
 port那一列输入default表示默认端口，否则输入具体端口号
