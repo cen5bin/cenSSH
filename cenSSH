@@ -1,0 +1,55 @@
+#!/bin/bash
+dir=$(dirname $0)
+hosts=($(awk 'NR>1{print $1}' ${dir}/host_list))
+passwords=($(awk 'NR>1{print $2}' ${dir}/host_list))
+ports=($(awk 'NR>1{print $3}' ${dir}/host_list))
+#hosts=($hosts)
+#passwords=($passwords)
+#ports=($ports)
+
+argu=""
+host=""
+password=""
+index=0
+if [ $# != 1 ]; then
+	echo "输入IP前的编号："
+	j=0
+	for i in ${hosts[@]}; do
+		j=$(($j+1))
+		echo "  [${j}] ${i}"
+	done
+	read index
+else
+	index=$1
+fi
+if [ "$1" == "-a" ] || [ "$1" == "add" ]; then
+	echo -n "输入host(username@IP):"
+	read host
+	echo -n "输入密码:"
+	read -s password
+	echo ""
+	echo -n "输入端口号(默认端口直接回车):"
+	read port
+	echo -e "$host\t\t$password\t\t\t$port" >> host_list
+else
+	index=$(($index-1))
+	host=${hosts[$index]}
+	password=${passwords[$index]}
+	port=${ports[$index]}
+fi
+
+if [ "$port" != "default" ]; then
+	argu=" -p $port "
+fi
+
+expect -c " 
+spawn ssh ${argu} ${host} 
+expect *password* { 
+	send ${password}\r
+} *yes/no* {
+	send yes\r
+	expect *password*
+	send ${password}\r
+}
+interact
+"
